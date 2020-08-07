@@ -109,10 +109,159 @@ object P07 {
   }
 
   def flattenViaFlatMap(ls: List[Any]): List[Any] =
-    ls flatMap({
+    ls flatMap ({
       case l: List[_] => flattenViaFlatMap(l)
       case e => List(e)
     })
 
 }
 
+
+object P08 {
+
+  // P08(**) Eliminate consecutive duplicates of list elements
+  def compress[A](ls: List[A]): List[A] =
+    ls.foldRight(List[A]())((h, t) => (h, t) match {
+      case (h, (h1 :: _)) =>
+        if (h == h1) t
+        else h :: t
+      case (h, Nil) => List(h)
+      case _ => Nil
+    })
+
+
+}
+
+object P09 {
+
+  // P09(**) Pack consecutive duplicates of list elements into sublists
+
+  def pack[A](ls: List[A]): List[List[A]] = {
+    def go(acc: List[List[A]], cur: List[A], l: List[A]): List[List[A]] = {
+      if (l.isEmpty) cur :: acc
+      else (cur, l) match {
+        case (Nil, (hl :: tl)) => go(acc, hl :: cur, tl)
+        case ((h :: t), (hl :: tl)) =>
+          if (h == hl) go(acc, h :: cur, tl)
+          else go(cur :: acc, hl :: Nil, tl)
+      }
+    }
+
+    go(List(), List(), ls).reverse
+  }
+
+}
+
+object P10 {
+
+  // P10 (*) Run-length encoding of a list
+  def encode[A](ls: List[A]): List[(Int, A)] =
+    P09.pack(ls) map (l => (l.length, l.head))
+}
+
+
+object P11 {
+
+  // P11 (*) Modified run-length encoding
+  def encodedModified[A](ls: List[A]): List[Any] =
+    P09.pack(ls) map (l =>
+      if (l.length == 1) l.head
+      else (l.length, l.head))
+
+}
+
+object P12 {
+
+  // P12 (**) Decode a run-length encoded list
+  def decode[A](encoded: List[(Int, A)]): List[A] =
+    encoded flatMap (l => List.fill(l._1)(l._2))
+
+}
+
+object P13 {
+
+  // P13 (**) Run-length encoding of a list(direct solution)
+  // Implement the so-called run-length encoding data compression
+  // method directly(do not use pack, do all the work directly
+
+  def encodeDirect[A](ls: List[A]): List[(Int, A)] = {
+    @scala.annotation.tailrec
+    def go(acc: List[(Int, A)], cur: (Int, A), l: List[A]): List[(Int, A)] =
+      l match {
+        case h :: Nil => cur :: acc
+        case h1 :: (h2 :: t2) =>
+          if (h1 == h2) go(acc, (cur._1 + 1, cur._2), h2 :: t2)
+          else go(cur :: acc, (1, h2), h2 :: t2)
+      }
+
+    if (ls.isEmpty) Nil
+    else go(List(), (1, ls.head), ls).reverse
+
+  }
+
+}
+
+object P14 {
+
+  // P14 (*) Duplicate the elements of a list
+  def duplicate[A](ls: List[A]): List[A] = ls match {
+    case Nil => Nil
+    case h :: t => h :: (h :: duplicate(t))
+  }
+
+}
+
+object P15 {
+
+  // P15 (**) Duplicate the elements of a list a given number of times
+  def duplicateN[A](n: Int, ls: List[A]): List[A] =
+    ls flatMap (v => List.fill(n)(v))
+
+}
+
+object P16 {
+
+  // P16 (**) Drop every Nth element from a list
+  def drop[A](n: Int, ls: List[A]): List[A] = {
+    @scala.annotation.tailrec
+    def go(acc: List[A], cur: Int, ls: List[A]): List[A] = ls match {
+      case Nil => acc
+      case h :: t =>
+        if (cur % n == 0) go(acc, 1, t)
+        else go(h :: acc, cur + 1, t)
+    }
+
+    go(List(), 1, ls).reverse
+  }
+
+  // Functional solution(link : http://aperiodic.net/phil/scala/s-99/p16.scala)
+  def dropFunctional[A](n: Int, ls: List[A]): List[A] =
+    ls.zipWithIndex filter { v => (v._2 + 1) % n != 0 } map (_._1)
+}
+
+object P17 {
+
+  // P17 (**) Split a list into two parts
+  def split[A](n: Int, ls: List[A]): (List[A], List[A]) =
+    ls.splitAt(n)
+
+}
+
+object P18 {
+
+  // P18 (**) Extract a slice from a list
+  def slice[A](lo: Int, hi: Int, ls: List[A]): List[A] =
+    ls.zipWithIndex.filter { v => v._2 >= lo && v._2 < hi } map (_._1)
+}
+
+object P19 {
+
+  // P19 (**) Rotate a list N places to the left
+  def rotate[A](n: Int, ls: List[A]): List[A] =
+    if (ls.isEmpty) Nil
+    else {
+      val mod = n % ls.length
+      if (mod < 0) (ls drop (mod + ls.length)) ::: (ls take (mod + ls.length))
+      else (ls drop mod) ::: (ls take mod)
+    }
+}
