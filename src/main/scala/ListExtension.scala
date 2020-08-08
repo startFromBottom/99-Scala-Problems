@@ -1,3 +1,8 @@
+import java.util.NoSuchElementException
+
+import javax.xml.crypto.dsig.spec.ExcC14NParameterSpec
+
+import scala.collection.mutable.ListBuffer
 
 object P01 {
 
@@ -264,4 +269,86 @@ object P19 {
       if (mod < 0) (ls drop (mod + ls.length)) ::: (ls take (mod + ls.length))
       else (ls drop mod) ::: (ls take mod)
     }
+}
+
+object P20 {
+
+  // P20 (*) Remove the Kth element from a list
+  def removeAt[A](pos: Int, ls: List[A]): (List[A], A) = {
+    if (pos < 0) throw new Exception("minus pos is not allowed")
+
+    var buf = new collection.mutable.ListBuffer[A]()
+
+    @scala.annotation.tailrec
+    def go(right: List[A], i: Int): (List[A], A) =
+      (right, i) match {
+        case (Nil, _) => throw new Exception("cannot remove")
+        case (h :: t, 0) => (t, h)
+        case (h :: t, i) =>
+          buf += h
+          go(t, i - 1)
+      }
+
+    val (right, v) = go(ls, pos)
+    (buf.toList ::: right, v)
+  }
+
+  // link : http://aperiodic.net/phil/scala/s-99/p20.scala
+  def removeAt_1[A](n: Int, ls: List[A]): (List[A], A) = ls.splitAt(n) match {
+    case (Nil, _) if n < 0 => throw new NoSuchElementException
+    case (pre, e :: post) => (pre ::: post, e)
+    case (pre, Nil) => throw new NoSuchElementException
+  }
+
+  // not tail recursion
+  def removeAt_2[A](n: Int, ls: List[A]): (List[A], A) =
+    if (n < 0) throw new NoSuchElementException
+    else (n, ls) match {
+      case (_, Nil) => throw new NoSuchElementException
+      case (0, h :: tail) => (tail, h)
+      case (_, h :: tail) =>
+        val (t, e) = removeAt_2(n - 1, tail)
+        (h :: t, e)
+    }
+
+}
+
+object P21 {
+
+  // P21 (*) Insert an element at a given position into a list
+  def insertAt[A](v: A, n: Int, ls: List[A]): List[A] =
+    ls.splitAt(n) match {
+      case (left, right) => left ::: v :: right
+    }
+}
+
+object P22 {
+
+  // P22 (*) Create a list containing all integers within a given range
+  def range(lo: Int, hi: Int): List[Int] = {
+    @scala.annotation.tailrec
+    def go(ls: List[Int], n: Int): List[Int] =
+      if (n == lo) lo :: ls
+      else go(n :: ls, n - 1)
+
+    go(List(), hi)
+  }
+
+}
+
+object P23 {
+
+  import P20.removeAt
+
+  def randomSelect[A](n: Int, ls: List[A]): List[A] = {
+
+    def go(n: Int, ls: List[A], r: util.Random): List[A] =
+      if (n <= 0) Nil
+      else {
+        val (rest, e) = removeAt(r.nextInt(ls.length), ls)
+        e :: go(n - 1, rest, r)
+      }
+
+    go(n, ls, new util.Random)
+  }
 }
