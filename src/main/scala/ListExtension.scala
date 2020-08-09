@@ -340,6 +340,7 @@ object P23 {
 
   import P20.removeAt
 
+  // P23 (**) Extract a given number of randomly selected elements from a list
   def randomSelect[A](n: Int, ls: List[A]): List[A] = {
 
     def go(n: Int, ls: List[A], r: util.Random): List[A] =
@@ -351,4 +352,50 @@ object P23 {
 
     go(n, ls, new util.Random)
   }
+}
+
+object P24 {
+
+  import P22.range
+  import P23.randomSelect
+
+  // P24 (*) Lotto: Draw N different random numbers from the set 1...M
+
+  def lotto(lo: Int, hi: Int): List[Int] =
+    randomSelect(6, range(lo, hi))
+
+}
+
+object P25 {
+
+  import P23.randomSelect
+
+  // P25 (*) Generate a random permutation of the elements of a list.
+
+  def randomPermute[A](ls: List[A]): List[A] =
+    randomSelect(ls.length, ls)
+
+}
+
+object P26 {
+
+  // P26 (**) Generate the combinations of K distinct objects chosen from the N elements of a list.
+
+  def combinations[A](n: Int, ls: List[A]): List[List[A]] = {
+    val buf = new collection.mutable.ListBuffer[List[A]]()
+
+    def go(l: Int, cur: List[A], ls: List[A]): Unit =
+      if (l == n)
+        buf += cur
+      else if (ls.isEmpty)
+        return
+      else {
+        go(l + 1, ls.head :: cur, ls.tail)
+        go(l, cur, ls.tail)
+      }
+
+    go(0, List(), ls)
+    buf.toList
+  }
+
 }
