@@ -398,4 +398,77 @@ object P26 {
     buf.toList
   }
 
+
+  // solve link : http://aperiodic.net/phil/scala/s-99/p26.scala
+  def flatMapSublists[A, B](ls: List[A])(f: List[A] => List[B]): List[B] =
+    ls match {
+      case Nil => Nil
+      case _ :: t => f(ls) ::: flatMapSublists(t)(f)
+    }
+
+  // 이해 불가...
+  def combinations_1[A](n: Int, ls: List[A]): List[List[A]] = {
+    if (n == 0) List(Nil)
+    else flatMapSublists(ls) { s1 =>
+      combinations_1(n - 1, s1.tail) map (s1.head :: _)
+    }
+
+  }
+
 }
+
+object P27 {
+
+  // P27 (**) Group the elements of a set into disjoint subsets
+
+  // a) In how many ways can a group of 9 people work in 3 disjoint subgroups of 2, 3 and 4 persons?
+  // Write a function that generates all the possibilities.
+
+  import P26.combinations
+
+  def group3[A](ls: List[A]): List[List[List[A]]] = {
+    for {
+      a <- combinations(2, ls)
+      notA = ls diff a
+      b <- combinations(3, ls)
+    } yield List(a, b, notA diff b)
+
+  }
+
+  // b) Generalize the above predicate in a way that we can specify a list
+  //        of group sizes and the predicate will return a list of groups.
+
+  def group[A](ns: List[Int], ls: List[A]): List[List[List[A]]] = ns match {
+    case Nil => List(Nil)
+    case h :: t => combinations(h, ls) flatMap (a => group(t, ls diff a) map (a :: _))
+  }
+
+  // for - comprehension
+  def group_1[A](ns: List[Int], ls: List[A]): List[List[List[A]]] = ns match {
+    case Nil => List(Nil)
+    case h :: t =>
+      for {
+        a <- combinations(h, ls)
+        mod <- group(t, ls diff a)
+      } yield a :: mod
+  }
+
+}
+
+object P28 {
+
+  // P28 (**)
+  // a) Sorting a list of lists according to length of sublists
+
+  def lsort[A](ls: List[List[A]]): List[List[A]] =
+    ls sortWith ((l1, l2) => l1.length < l2.length)
+
+
+  // b) Sorting a list of lists accroding to their length frequency
+
+  def lsortFreq[A](ls: List[List[A]]): List[List[A]] =
+    ls
+
+}
+
+
