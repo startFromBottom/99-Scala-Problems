@@ -406,7 +406,6 @@ object P26 {
       case _ :: t => f(ls) ::: flatMapSublists(t)(f)
     }
 
-  // 이해 불가...
   def combinations_1[A](n: Int, ls: List[A]): List[List[A]] = {
     if (n == 0) List(Nil)
     else flatMapSublists(ls) { s1 =>
@@ -458,7 +457,9 @@ object P27 {
 object P28 {
 
   // P28 (**)
-  // a) Sorting a list of lists according to length of sublists
+  // a) Sorting a list of lists according to length of sublist
+
+  import collection.mutable
 
   def lsort[A](ls: List[List[A]]): List[List[A]] =
     ls sortWith ((l1, l2) => l1.length < l2.length)
@@ -466,8 +467,10 @@ object P28 {
 
   // b) Sorting a list of lists accroding to their length frequency
 
-  def lsortFreq[A](ls: List[List[A]]): List[List[A]] =
-    ls
+  def lsortFreq[A](ls: List[List[A]]): List[List[A]] = {
+    val freqMap = ls.groupBy(_.length).view.mapValues(_.length)
+    ls.map(v => (v, freqMap(v.length))).sortBy(_._2)(Ordering[Int].reverse).map(_._1)
+  }
 
 }
 
